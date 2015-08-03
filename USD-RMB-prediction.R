@@ -1,5 +1,5 @@
 exchangeRate <- read.csv("./USDtoRMB.csv",header=TRUE, sep=",")
-exchangeRateTS <- ts(exchangeRate$Mid, frequency=365, start=c(2014,1))
+exchangeRateTS <- ts(exchangeRate$Mid, frequency=365, start=c(2012,1))
 plot.ts(exchangeRateTS)
 
 install.pakcages("TTR")
@@ -13,3 +13,6 @@ plot.ts(exchangeRateSMA10)
 
 exchangeRateSMA30 <- SMA(exchangeRateTS, n=30)
 plot.ts(exchangeRateSMA30)
+
+exchangeRateDecomposed <- decompose(exchangeRateTS)
+plot(exchangeRateDecomposed)
