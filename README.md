@@ -1,2 +1,4 @@
-datasciencecoursera
+datascience
 ===================
+Time Series
+Machine Learning
