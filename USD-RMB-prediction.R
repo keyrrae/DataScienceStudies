@@ -10,3 +10,6 @@ plot.ts(exchangeRateSMA5)
 
 exchangeRateSMA10 <- SMA(exchangeRateTS, n=10)
 plot.ts(exchangeRateSMA10)
+
+exchangeRateSMA30 <- SMA(exchangeRateTS, n=30)
+plot.ts(exchangeRateSMA30)
