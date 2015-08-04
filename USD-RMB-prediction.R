@@ -53,3 +53,6 @@ exchangeRateArimaFore <- forecast.Arima(exchangeRateArima, h=180)
 plot.forecast(exchangeRateArimaFore)
 exchangeRatediff <- diff(ts, differences=1)
 plot.ts(exchangeRatediff)
+
+
+install.packages("fGarch")
