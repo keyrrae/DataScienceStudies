@@ -1,32 +1,3 @@
-exchangeRate <- read.csv("./USDtoRMB.csv",header=TRUE, sep=",")
-exchangeRateTS <- ts(exchangeRate$Mid, frequency=365, start=c(2012,1))
-plot.ts(exchangeRateTS)
-
-install.pakcages("TTR")
-library("TTR")
-
-exchangeRateSMA5 <- SMA(exchangeRateTS, n=5)
-plot.ts(exchangeRateSMA5)
-
-exchangeRateSMA10 <- SMA(exchangeRateTS, n=10)
-plot.ts(exchangeRateSMA10)
-
-exchangeRateSMA30 <- SMA(exchangeRateTS, n=30)
-plot.ts(exchangeRateSMA30)
-
-exchangeRateDecomposed <- decompose(exchangeRateTS)
-plot(exchangeRateDecomposed)
-
-exchangeRateForecast <- HoltWinters(exchangeRageTS, gamma=FALSE)
-plot(exchangeRateForecaset)
-
-install.packages("forecast")
-library(forecast)
-
-exchangeRageForecast2 <- forecast.HoltWinters(exchangeRageTS, h=19)
-
-
-
 plotForecastErrors <- function(forecasterrors)
   {
      # make a histogram of the forecast errors:
@@ -49,3 +20,36 @@ plotForecastErrors <- function(forecasterrors)
      # plot the normal curve as a blue line on top of the histogram of forecast errors:
      points(myhist$mids, myhist$density, type="l", col="blue", lwd=2)
   }
+
+exchangeRate <- read.csv("./USDtoRMB.csv",header=TRUE, sep=",")
+exchangeRateTS <- ts(exchangeRate$Mid, frequency=365, start=c(2012,1))
+plot.ts(exchangeRateTS)
+
+install.pakcages("TTR")
+library("TTR")
+
+exchangeRateSMA5 <- SMA(exchangeRateTS, n=5)
+plot.ts(exchangeRateSMA5)
+
+exchangeRateSMA10 <- SMA(exchangeRateTS, n=10)
+plot.ts(exchangeRateSMA10)
+
+exchangeRateSMA30 <- SMA(exchangeRateTS, n=30)
+plot.ts(exchangeRateSMA30)
+
+exchangeRateDecomposed <- decompose(exchangeRateTS)
+plot(exchangeRateDecomposed)
+
+exchangeRateForecast <- HoltWinters(exchangeRageTS, gamma=FALSE)
+plot(exchangeRateForecaset)
+
+install.packages("forecast")
+library(forecast)
+
+exchangeRateForecast2 <- forecast.HoltWinters(exchangeRateForecast, h=180)
+
+exchangeRateArima <- arima(exchangeRateTS, order=c(0,1,0))
+exchangeRateArimaFore <- forecast.Arima(exchangeRateArima, h=180)
+plot.forecast(exchangeRateArimaFore)
+exchangeRatediff <- diff(ts, differences=1)
+plot.ts(exchangeRatediff)
