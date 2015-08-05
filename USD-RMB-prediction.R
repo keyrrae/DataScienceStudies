@@ -56,3 +56,5 @@ plot.ts(exchangeRatediff)
 
 
 install.packages("fGarch")
+tsgarchFit<-garchFit(formula = ~garch(1,1),data=ts)
+predict(tsgarchFit, n.ahead=180,trace=TRUE,plot=TRUE)
