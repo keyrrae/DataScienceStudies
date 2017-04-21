@@ -1,57 +1,70 @@
 package main
 
 import (
-	"log"
-	//"net/http"
-	"github.com/graphql-go/graphql"
-	"github.com/graphql-go/handler"
-	//"fmt"
-	//"encoding/json"
+	"fmt"
 	"net/http"
+	"log"
+	"time"
+	"crypto/md5"
+	"io"
+	"strconv"
+	"os"
+	"html/template"
 )
 
-func main() {
-	// Schema
-	fields := graphql.Fields{
-		"hello": &graphql.Field{
-			Type: graphql.String,
-			Resolve: func(p graphql.ResolveParams) (interface{}, error) {
-				return "world", nil
-			},
-		},
-	}
-	rootQuery := graphql.ObjectConfig{Name: "RootQuery", Fields: fields}
-	schemaConfig := graphql.SchemaConfig{Query: graphql.NewObject(rootQuery)}
-	schema, err := graphql.NewSchema(schemaConfig)
-	if err != nil {
-		log.Fatalf("failed to create new schema, error: %v", err)
-	}
 
-	h := handler.New(&handler.Config{
-		Schema: &schema,
-		Pretty: true,
-	})
+func HomeHandler(writer http.ResponseWriter, request *http.Request) {
+	fmt.Fprintf(writer, "Hello World, %s!", request.URL.Path[1:])
+}
 
 
-	// serve HTTP
-	http.Handle("/graphql", h)
-	http.ListenAndServe(":8080", nil)
+// upload logic
+func UploadHandler(w http.ResponseWriter, r *http.Request) {
+	fmt.Println("method:", r.Method)
+	if r.Method == "GET" {
+		crutime := time.Now().Unix()
+		h := md5.New()
+		io.WriteString(h, strconv.FormatInt(crutime, 10))
+		token := fmt.Sprintf("%x", h.Sum(nil))
 
-	//localhost:8080/graphql?query={hello}
-/*
-	// Query
-	query := `
-		{
-			hello
+		t, _ := template.ParseFiles("upload.gtpl")
+		t.Execute(w, token)
+	} else {
+		r.ParseMultipartForm(32 << 20)
+		file, handler, err := r.FormFile("uploadfile")
+		if err != nil {
+			fmt.Println(err)
+			return
 		}
-	`
-	fmt.Println(schema)
-	params := graphql.Params{Schema: schema, RequestString: query}
-	r := graphql.Do(params)
-	if len(r.Errors) > 0 {
-		log.Fatalf("failed to execute graphql operation, errors: %+v", r.Errors)
+		defer file.Close()
+		fmt.Fprintf(w, "%v", handler.Header)
+		f, err := os.OpenFile("./test/"+handler.Filename, os.O_WRONLY|os.O_CREATE, 0666)
+		if err != nil {
+			fmt.Println(err)
+			return
+		}
+		defer f.Close()
+		io.Copy(f, file)
 	}
-	rJSON, _ := json.Marshal(r)
-	fmt.Printf("%s \n", rJSON) // {“data”:{“hello”:”world”}}
-*/
+}
+
+
+func main() {
+
+	//======================
+
+	mux := http.NewServeMux()
+	mux.HandleFunc("/", HomeHandler)
+	mux.HandleFunc("/upload", UploadHandler)
+
+
+	server := &http.Server{
+		Addr:    "127.0.0.1:5000",
+		Handler: mux,
+	}
+
+	err := server.ListenAndServeTLS("server.crt", "server.key")
+	if err != nil {
+		log.Fatal("ListenAndServer: ", err)
+	}
 }
