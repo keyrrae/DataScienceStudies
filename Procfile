@@ -1,1 +1,1 @@
-web:monimenta_backend
+web: monimenta_backend
