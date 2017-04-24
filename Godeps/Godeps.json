@@ -1,0 +1,19 @@
+{
+	"ImportPath": "github.com/keyrrae/monimenta_backend",
+	"GoVersion": "go1.8",
+	"GodepVersion": "v77",
+	"Packages": [
+		"./"
+	],
+	"Deps": [
+		{
+			"ImportPath": "github.com/goji/httpauth",
+			"Rev": "2da839ab0f4df05a6db5eb277995589dadbd4fb9"
+		},
+		{
+			"ImportPath": "github.com/gorilla/mux",
+			"Comment": "v1.3.0-5-g599cba5",
+			"Rev": "599cba5e7b6137d46ddf58fb1765f5d928e69604"
+		}
+	]
+}
