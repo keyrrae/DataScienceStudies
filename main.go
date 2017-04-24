@@ -29,6 +29,7 @@ func main() {
 
 	r.HandleFunc("/", RootHandler)//.Method("GET")
 
+
 	r.HandleFunc("/signup", SignupHandler).Methods("POST")
 	//http.Handle("/signup", httpauth.BasicAuth(authOpts)(r))
 
