@@ -33,7 +33,9 @@ func main() {
 	r.HandleFunc("/hh", YourHandler).Methods("GET")
 	http.Handle("/", httpauth.BasicAuth(authOpts)(r))
 
-	http.ListenAndServeTLS(":5000", "server.crt", "server.key", nil)
+	//http.ListenAndServeTLS(":5000", "server.crt", "server.key", nil)
+	http.ListenAndServe(":5000",  nil)
+
 }
 
 func RootHandler(w http.ResponseWriter, r *http.Request) {
