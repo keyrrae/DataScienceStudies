@@ -5,6 +5,8 @@ import (
 	"net/http"
 	"github.com/gorilla/mux"
 	"github.com/goji/httpauth"
+	"os"
+	"log"
 )
 
 var cred map[string]string
@@ -34,7 +36,12 @@ func main() {
 	http.Handle("/", httpauth.BasicAuth(authOpts)(r))
 
 	//http.ListenAndServeTLS(":5000", "server.crt", "server.key", nil)
-	http.ListenAndServe(":5000",  nil)
+	port := os.Getenv("PORT")
+	if port == ""{
+		log.Fatal("$PORT must be set")
+	}
+
+	http.ListenAndServe(":" + port,  nil)
 
 }
 
