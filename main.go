@@ -3,68 +3,61 @@ package main
 import (
 	"fmt"
 	"net/http"
-	"log"
-	"time"
-	"crypto/md5"
-	"io"
-	"strconv"
-	"os"
-	"html/template"
+	"github.com/gorilla/mux"
+	"github.com/goji/httpauth"
 )
 
+var cred map[string]string
 
-func HomeHandler(writer http.ResponseWriter, request *http.Request) {
-	fmt.Fprintf(writer, "Hello World, %s!", request.URL.Path[1:])
+func init() {
+	cred = make(map[string]string)
+	cred["signup"] = "signup"
 }
-
-
-// upload logic
-func UploadHandler(w http.ResponseWriter, r *http.Request) {
-	fmt.Println("method:", r.Method)
-	if r.Method == "GET" {
-		crutime := time.Now().Unix()
-		h := md5.New()
-		io.WriteString(h, strconv.FormatInt(crutime, 10))
-		token := fmt.Sprintf("%x", h.Sum(nil))
-
-		t, _ := template.ParseFiles("upload.gtpl")
-		t.Execute(w, token)
-	} else {
-		r.ParseMultipartForm(32 << 20)
-		file, handler, err := r.FormFile("uploadfile")
-		if err != nil {
-			fmt.Println(err)
-			return
-		}
-		defer file.Close()
-		fmt.Fprintf(w, "%v", handler.Header)
-		f, err := os.OpenFile("./test/"+handler.Filename, os.O_WRONLY|os.O_CREATE, 0666)
-		if err != nil {
-			fmt.Println(err)
-			return
-		}
-		defer f.Close()
-		io.Copy(f, file)
-	}
-}
-
 
 func main() {
+	myUnauthorizedHandler := genHandler()
 
-	//======================
-
-	mux := http.NewServeMux()
-	mux.HandleFunc("/", HomeHandler)
-	mux.HandleFunc("/upload", UploadHandler)
-
-
-	server := &http.Server{
-		Addr:    "127.0.0.1:5000",
-		Handler: mux,
+	authOpts := httpauth.AuthOptions{
+		Realm: "DevCo",
+		AuthFunc: myAuthFunc,
+		UnauthorizedHandler: myUnauthorizedHandler,
 	}
 
-	err := server.ListenAndServeTLS("server.crt", "server.key")
-	if err != nil {
-		log.Fatal("ListenAndServer: ", err)
-	}
+	r := mux.NewRouter()
+
+	r.HandleFunc("/", RootHandler)//.Method("GET")
+
+	r.HandleFunc("/signup", SignupHandler).Methods("POST")
+	//http.Handle("/signup", httpauth.BasicAuth(authOpts)(r))
+
+	r.HandleFunc("/hh", YourHandler).Methods("GET")
+	http.Handle("/", httpauth.BasicAuth(authOpts)(r))
+
+	http.ListenAndServeTLS(":5000", "server.crt", "server.key", nil)
+}
+
+func RootHandler(w http.ResponseWriter, r *http.Request) {
+	fmt.Fprintf(w, "Hello World, %s!", r.URL.Path[1:])
+}
+
+func SignupHandler(w http.ResponseWriter, r *http.Request) {
+	rlen := r.ContentLength
+	body := make([]byte, rlen)
+	r.Body.Read(body)
+	fmt.Fprintln(w, string(body))
+}
+
+func YourHandler(w http.ResponseWriter, r *http.Request) {
+	w.Write([]byte("Gorilla!\n"))
+}
+
+func myAuthFunc(user, pass string, r *http.Request) bool {
+	return pass == cred[user]
+}
+
+func genHandler() http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(http.StatusUnauthorized) // 404
+		w.Write([]byte("Unauthorized"))
+	})
 }

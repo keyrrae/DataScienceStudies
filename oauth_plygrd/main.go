@@ -3,10 +3,18 @@ package main
 import (
 	"net/http"
 
-	"github.com/goji/httpauth"
+	_ "github.com/goji/httpauth"
 	"github.com/gorilla/mux"
-	"strings"
+	"fmt"
+	"github.com/goji/httpauth"
 )
+
+var cred map[string]string
+
+func init() {
+	cred = make(map[string]string)
+	cred["signup"] = "signup"
+}
 
 func main() {
 
@@ -20,10 +28,27 @@ func main() {
 
 	r := mux.NewRouter()
 
-	r.HandleFunc("/", YourHandler)
+	r.HandleFunc("/", RootHandler)//.Method("GET")
+
+	r.HandleFunc("/signup", SignupHandler).Methods("POST")
+	//http.Handle("/signup", httpauth.BasicAuth(authOpts)(r))
+
+	r.HandleFunc("/hh", YourHandler).Methods("GET")
 	http.Handle("/", httpauth.BasicAuth(authOpts)(r))
 
 	http.ListenAndServe(":7000", nil)
+}
+
+func RootHandler(w http.ResponseWriter, r *http.Request) {
+	w.Write([]byte("Gorilla!\n"))
+
+}
+
+func SignupHandler(w http.ResponseWriter, r *http.Request) {
+	rlen := r.ContentLength
+	body := make([]byte, rlen)
+	r.Body.Read(body)
+	fmt.Fprintln(w, string(body))
 }
 
 func YourHandler(w http.ResponseWriter, r *http.Request) {
@@ -31,7 +56,7 @@ func YourHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func myAuthFunc(user, pass string, r *http.Request) bool {
-	return pass == strings.Repeat(user, 3)
+	return pass == cred[user]
 }
 
 func genHandler() http.Handler {
