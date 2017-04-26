@@ -42,8 +42,8 @@ func main() {
 		log.Fatal("$PORT must be set")
 	}
 
+	//http.ListenAndServeTLS(":"+port, "server.crt", "server.key", nil)
 	http.ListenAndServe(":" + port,  nil)
-
 }
 
 func RootHandler(w http.ResponseWriter, r *http.Request) {
