@@ -11,6 +11,8 @@ import (
 	"github.com/gorilla/mux"
 )
 
+var dbname = "heroku_tqfnq24p"
+
 type (
 	// UserController represents the controller for operating on the User resource
 	UserController struct {
@@ -82,19 +84,30 @@ func (uc UserController) CreateUser(w http.ResponseWriter, r *http.Request) {
 
 	fmt.Println(u)
 
-	// Add an Id
-	u.Id = bson.NewObjectId()
 
-	// Write the user to mongo
-	uc.session.DB("heroku_tqfnq24p").C("users").Insert(u)
+	uindb := models.User{}
+	err := uc.session.DB(dbname).C("users").Find(bson.M{"email": u.Email}).One(&uindb)
+	if err != nil {
+		//log.Fatal(err)
+		// Add an Id
+		u.Id = bson.NewObjectId()
 
-	// Marshal provided interface into JSON structure
-	uj, _ := json.Marshal(u)
+		// Write the user to mongo
+		uc.session.DB("heroku_tqfnq24p").C("users").Insert(u)
 
-	// Write content-type, statuscode, payload
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(201)
-	fmt.Fprintf(w, "%s", uj)
+		// Marshal provided interface into JSON structure
+		uj, _ := json.Marshal(u)
+
+		// Write content-type, statuscode, payload
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(201)
+		fmt.Fprintf(w, "%s", uj)
+		return
+	}
+
+	if u.Email == uindb.Email {
+		w.WriteHeader(http.StatusConflict)
+	}
 }
 
 // RemoveUser removes an existing user resource
