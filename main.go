@@ -1,73 +1,67 @@
 package main
 
+
 import (
-	"fmt"
-	"net/http"
 	"github.com/gorilla/mux"
-	"github.com/goji/httpauth"
+	"github.com/keyrrae/monimenta_backend/basicauth"
 	"os"
 	"log"
+	"net/http"
+	"gopkg.in/mgo.v2"
+	"fmt"
+	"github.com/keyrrae/monimenta_backend/controllers"
 )
 
 var cred map[string]string
 
 func init() {
 	cred = make(map[string]string)
-	cred["signup"] = "signup"
+	cred["admin"] = "admin"
 }
 
 func main() {
-	myUnauthorizedHandler := genHandler()
-
-	authOpts := httpauth.AuthOptions{
-		Realm: "DevCo",
-		AuthFunc: myAuthFunc,
-		UnauthorizedHandler: myUnauthorizedHandler,
-	}
-
 	r := mux.NewRouter()
 
-	r.HandleFunc("/", RootHandler)//.Method("GET")
+	// Get a UserController instance
+	uc := controllers.NewUserController(getSession())
+	auth := basicauth.NewBasicAuthenticator(uc, cred)
 
+	// Get a user resource
 
-	r.HandleFunc("/signup", SignupHandler).Methods("POST")
-	//http.Handle("/signup", httpauth.BasicAuth(authOpts)(r))
+	r.HandleFunc("/user/{userid}", uc.GetUser).Methods("GET")
 
-	r.HandleFunc("/hh", YourHandler).Methods("GET")
-	http.Handle("/", httpauth.BasicAuth(authOpts)(r))
+	r.HandleFunc("/", basicauth.WrapAuthenticator(RootHandler, auth.UserAuth)).Methods("GET")
 
-	//http.ListenAndServeTLS(":5000", "server.crt", "server.key", nil)
+	// Create a new user
+	NewUserHandler := basicauth.WrapAuthenticator(uc.CreateUser, auth.AdminAuth)
+	r.HandleFunc("/user", NewUserHandler).Methods("POST")
+
+	// Remove an existing user
+	r.HandleFunc("/user/:id", uc.RemoveUser).Methods("DELETE")
+
 	port := os.Getenv("PORT")
-	if port == ""{
+	if port == "" {
 		log.Fatal("$PORT must be set")
 	}
 
-	//http.ListenAndServeTLS(":"+port, "server.crt", "server.key", nil)
-	http.ListenAndServe(":" + port,  nil)
+	// Fire up the server
+	http.ListenAndServe(":" + port, r)
+}
+
+// getSession creates a new mongo session and panics if connection error occurs
+func getSession() *mgo.Session {
+	// Connect to our local mongo
+	s, err := mgo.Dial("mongodb://admin:c0ffee@ds119091.mlab.com:19091/heroku_tqfnq24p")
+
+	// Check if connection error, is mongo running?
+	if err != nil {
+		panic(err)
+	}
+
+	// Deliver session
+	return s
 }
 
 func RootHandler(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprintf(w, "Hello World, %s!", r.URL.Path[1:])
-}
-
-func SignupHandler(w http.ResponseWriter, r *http.Request) {
-	rlen := r.ContentLength
-	body := make([]byte, rlen)
-	r.Body.Read(body)
-	fmt.Fprintln(w, string(body))
-}
-
-func YourHandler(w http.ResponseWriter, r *http.Request) {
-	w.Write([]byte("Gorilla!\n"))
-}
-
-func myAuthFunc(user, pass string, r *http.Request) bool {
-	return pass == cred[user]
-}
-
-func genHandler() http.Handler {
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		w.WriteHeader(http.StatusUnauthorized) // 404
-		w.Write([]byte("Unauthorized"))
-	})
 }
