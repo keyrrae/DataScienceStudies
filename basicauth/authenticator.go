@@ -42,7 +42,6 @@ func (au *BasicAuthenticator) FuncAdminAuth(uid, pass string) bool {
 	return uid == "admin" && pass == "admin"
 }
 
-
 // static method
 func WrapAuthenticator(h http.HandlerFunc, middleware ...func(http.HandlerFunc) http.HandlerFunc) http.HandlerFunc {
 	for _, m := range middleware {

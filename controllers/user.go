@@ -3,14 +3,6 @@ package controllers
 import (
 	"fmt"
 	"net/http"
-	/*
-	"encoding/json"
-
-	"github.com/keyrrae/monimenta_backend/mongodb_plygrd/models"
-	"gopkg.in/mgo.v2"
-	"gopkg.in/mgo.v2/bson"
-	"golang.org/x/tools/go/gcimporter15/testdata"
-	*/
 	"gopkg.in/mgo.v2"
 	"github.com/keyrrae/monimenta_backend/models"
 	"gopkg.in/mgo.v2/bson"
@@ -54,28 +46,12 @@ func (uc UserController) GetUser(w http.ResponseWriter, r *http.Request) {
 	params := mux.Vars(r)
 	userid := params["userid"]
 
-
-
-	w.Write([]byte("Hello " + userid))
-	//id := p.ByName("id")
-	w.WriteHeader(201)
-	//fmt.Println(r.Body)
-	/*
-	// Verify id is ObjectId, otherwise bail
-	if !bson.IsObjectIdHex(id) {
+	if !bson.IsObjectIdHex(userid) {
 		w.WriteHeader(404)
 		return
-	}*/
+	}
 
-	// Grab id
-/*
-	var user models.User
-
-	json.Unmarshal(r.Body, &user)
-
-	oid := bson.ObjectIdHex(id)
-
-	fmt.Println(oid)
+	oid := bson.ObjectIdHex(userid)
 
 	// Stub user
 	u := models.User{}
@@ -86,16 +62,14 @@ func (uc UserController) GetUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	print()
-
 	// Marshal provided interface into JSON structure
 	uj, _ := json.Marshal(u)
 
 	// Write content-type, statuscode, payload
 	w.Header().Set("Content-Type", "application/json")
+
 	w.WriteHeader(200)
 	fmt.Fprintf(w, "%s", uj)
-	*/
 }
 
 // CreateUser creates a new user resource
@@ -126,19 +100,15 @@ func (uc UserController) CreateUser(w http.ResponseWriter, r *http.Request) {
 // RemoveUser removes an existing user resource
 func (uc UserController) RemoveUser(w http.ResponseWriter, r *http.Request) {
 	// Grab id
-	/*
-	id := p.ByName("id")
+	params := mux.Vars(r)
+	userid := params["userid"]
 
-	// Verify id is ObjectId, otherwise bail
-	/*
-	if !bson.IsObjectIdHex(id) {
+	if !bson.IsObjectIdHex(userid) {
 		w.WriteHeader(404)
 		return
-	}*/
+	}
 
-	// Grab id
-	/*
-	oid := bson.ObjectIdHex(id)
+	oid := bson.ObjectIdHex(userid)
 
 	// Remove user
 	if err := uc.session.DB("heroku_tqfnq24p").C("users").RemoveId(oid); err != nil {
@@ -147,5 +117,5 @@ func (uc UserController) RemoveUser(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Write status
-	w.WriteHeader(200)*/
+	w.WriteHeader(200)
 }

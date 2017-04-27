@@ -37,7 +37,7 @@ func main() {
 	r.HandleFunc("/user", NewUserHandler).Methods("POST")
 
 	// Remove an existing user
-	r.HandleFunc("/user/:id", uc.RemoveUser).Methods("DELETE")
+	r.HandleFunc("/user/{userid}", uc.RemoveUser).Methods("DELETE")
 
 	port := os.Getenv("PORT")
 	if port == "" {
