@@ -42,6 +42,36 @@ func (uc UserController) GetUserFromDB(id string) (user models.User, err error) 
 	return u, nil
 }
 
+func (uc UserController) AuthUser(w http.ResponseWriter, r *http.Request) {
+	u := models.User{}
+
+	// Populate the user data
+	json.NewDecoder(r.Body).Decode(&u)
+
+	uindb := models.User{}
+	err := uc.session.DB(dbname).C("users").Find(bson.M{"email": u.Email}).One(&uindb)
+	if err != nil {
+		w.WriteHeader(http.StatusNotFound)
+		return
+	}
+
+	if u.Cred != uindb.Cred {
+		w.WriteHeader(http.StatusUnauthorized)
+		return
+	}
+
+	// Marshal provided interface into JSON structure
+	uj, _ := json.Marshal(u)
+
+	// Write content-type, statuscode, payload
+	w.Header().Set("Content-Type", "application/json")
+
+	w.WriteHeader(http.StatusOK)
+	fmt.Fprintf(w, "%s", uj)
+
+
+}
+
 // GetUser retrieves an individual user resource
 func (uc UserController) GetUser(w http.ResponseWriter, r *http.Request) {
 	// Grab id
@@ -83,7 +113,6 @@ func (uc UserController) CreateUser(w http.ResponseWriter, r *http.Request) {
 	json.NewDecoder(r.Body).Decode(&u)
 
 	fmt.Println(u)
-
 
 	uindb := models.User{}
 	err := uc.session.DB(dbname).C("users").Find(bson.M{"email": u.Email}).One(&uindb)

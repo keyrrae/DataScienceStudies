@@ -28,6 +28,8 @@ func main() {
 
 	// Get a user resource
 
+	r.HandleFunc("/auth", uc.AuthUser).Methods("POST")
+
 	r.HandleFunc("/user/{userid}", uc.GetUser).Methods("GET")
 
 	r.HandleFunc("/", basicauth.WrapAuthenticator(RootHandler, auth.UserAuth)).Methods("GET")
