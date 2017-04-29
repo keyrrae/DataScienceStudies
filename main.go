@@ -1,18 +1,18 @@
 package main
 
-
 import (
+	"fmt"
 	"github.com/gorilla/mux"
 	"github.com/keyrrae/monimenta_backend/basicauth"
-	"os"
+	"github.com/keyrrae/monimenta_backend/controllers"
+	"gopkg.in/mgo.v2"
 	"log"
 	"net/http"
-	"gopkg.in/mgo.v2"
-	"fmt"
-	"github.com/keyrrae/monimenta_backend/controllers"
+	"os"
 )
 
 var cred map[string]string
+var dbname = "heroku_tqfnq24p"
 
 func init() {
 	cred = make(map[string]string)
@@ -23,23 +23,25 @@ func main() {
 	r := mux.NewRouter()
 
 	// Get a UserController instance
-	uc := controllers.NewUserController(getSession())
+	uc := controllers.NewUserController(getSession(), dbname)
 	auth := basicauth.NewBasicAuthenticator(uc, cred)
 
 	// Get a user resource
+	authHandler := basicauth.WrapAuthenticator(RootHandler, auth.AdminAuth)
+	r.HandleFunc("/auth", authHandler).Methods("POST")
 
-	r.HandleFunc("/auth", uc.AuthUser).Methods("POST")
-
-	r.HandleFunc("/user/{userid}", uc.GetUser).Methods("GET")
+	getUserHandler := basicauth.WrapAuthenticator(uc.CreateUser, auth.UserAuth)
+	r.HandleFunc("/user/{userid}", getUserHandler).Methods("GET")
 
 	r.HandleFunc("/", basicauth.WrapAuthenticator(RootHandler, auth.UserAuth)).Methods("GET")
 
 	// Create a new user
-	NewUserHandler := basicauth.WrapAuthenticator(uc.CreateUser, auth.AdminAuth)
-	r.HandleFunc("/user", NewUserHandler).Methods("POST")
+	newUserHandler := basicauth.WrapAuthenticator(uc.CreateUser, auth.AdminAuth)
+	r.HandleFunc("/user", newUserHandler).Methods("POST")
 
 	// Remove an existing user
-	r.HandleFunc("/user/{userid}", uc.RemoveUser).Methods("DELETE")
+	removeUserHandler := basicauth.WrapAuthenticator(uc.CreateUser, auth.AdminAuth)
+	r.HandleFunc("/user/{userid}", removeUserHandler).Methods("DELETE")
 
 	port := os.Getenv("PORT")
 	if port == "" {
@@ -47,7 +49,7 @@ func main() {
 	}
 
 	// Fire up the server
-	http.ListenAndServe(":" + port, r)
+	http.ListenAndServe(":"+port, r)
 }
 
 // getSession creates a new mongo session and panics if connection error occurs

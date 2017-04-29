@@ -1,28 +1,28 @@
 package controllers
 
 import (
-	"fmt"
-	"net/http"
-	"gopkg.in/mgo.v2"
-	"github.com/keyrrae/monimenta_backend/models"
-	"gopkg.in/mgo.v2/bson"
-	"errors"
 	"encoding/json"
+	"errors"
+	"fmt"
 	"github.com/gorilla/mux"
+	"github.com/keyrrae/monimenta_backend/models"
+	"gopkg.in/mgo.v2"
+	"gopkg.in/mgo.v2/bson"
+	"net/http"
 )
-
-var dbname = "heroku_tqfnq24p"
 
 type (
 	// UserController represents the controller for operating on the User resource
 	UserController struct {
-		session *mgo.Session
+		dbname    string
+		session   *mgo.Session
+		tablename string
 	}
 )
 
 // NewUserController provides a reference to a UserController with provided mongo session
-func NewUserController(s *mgo.Session) *UserController {
-	return &UserController{s}
+func NewUserController(s *mgo.Session, db_name string) *UserController {
+	return &UserController{dbname: db_name, session: s, tablename: "users"}
 }
 
 func (uc UserController) GetUserFromDB(id string) (user models.User, err error) {
@@ -35,7 +35,7 @@ func (uc UserController) GetUserFromDB(id string) (user models.User, err error) 
 	bid := bson.ObjectIdHex(id)
 
 	// Fetch user
-	if err := uc.session.DB("heroku_tqfnq24p").C("users").FindId(bid).One(&u); err != nil {
+	if err := uc.session.DB(uc.dbname).C(uc.tablename).FindId(bid).One(&u); err != nil {
 		return u, nil
 	}
 
@@ -49,7 +49,7 @@ func (uc UserController) AuthUser(w http.ResponseWriter, r *http.Request) {
 	json.NewDecoder(r.Body).Decode(&u)
 
 	uindb := models.User{}
-	err := uc.session.DB(dbname).C("users").Find(bson.M{"email": u.Email}).One(&uindb)
+	err := uc.session.DB(uc.dbname).C(uc.tablename).Find(bson.M{"email": u.Email}).One(&uindb)
 	if err != nil {
 		w.WriteHeader(http.StatusNotFound)
 		return
@@ -69,7 +69,6 @@ func (uc UserController) AuthUser(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusOK)
 	fmt.Fprintf(w, "%s", uj)
 
-
 }
 
 // GetUser retrieves an individual user resource
@@ -85,11 +84,12 @@ func (uc UserController) GetUser(w http.ResponseWriter, r *http.Request) {
 
 	oid := bson.ObjectIdHex(userid)
 
-	// Stub user
-	u := models.User{}
+	// Stub user information
+	// No credential information in UserInfo
+	u := models.UserInfo{}
 
 	// Fetch user
-	if err := uc.session.DB("heroku_tqfnq24p").C("users").FindId(oid).One(&u); err != nil {
+	if err := uc.session.DB(uc.dbname).C(uc.tablename).FindId(oid).One(&u); err != nil {
 		w.WriteHeader(404)
 		return
 	}
@@ -115,14 +115,14 @@ func (uc UserController) CreateUser(w http.ResponseWriter, r *http.Request) {
 	fmt.Println(u)
 
 	uindb := models.User{}
-	err := uc.session.DB(dbname).C("users").Find(bson.M{"email": u.Email}).One(&uindb)
+	err := uc.session.DB(uc.dbname).C(uc.tablename).Find(bson.M{"email": u.Email}).One(&uindb)
 	if err != nil {
 		//log.Fatal(err)
 		// Add an Id
 		u.Id = bson.NewObjectId()
 
 		// Write the user to mongo
-		uc.session.DB("heroku_tqfnq24p").C("users").Insert(u)
+		uc.session.DB(uc.dbname).C(uc.tablename).Insert(u)
 
 		// Marshal provided interface into JSON structure
 		uj, _ := json.Marshal(u)
@@ -146,18 +146,18 @@ func (uc UserController) RemoveUser(w http.ResponseWriter, r *http.Request) {
 	userid := params["userid"]
 
 	if !bson.IsObjectIdHex(userid) {
-		w.WriteHeader(404)
+		w.WriteHeader(http.StatusNotFound)
 		return
 	}
 
 	oid := bson.ObjectIdHex(userid)
 
 	// Remove user
-	if err := uc.session.DB("heroku_tqfnq24p").C("users").RemoveId(oid); err != nil {
-		w.WriteHeader(404)
+	if err := uc.session.DB(uc.dbname).C(uc.tablename).RemoveId(oid); err != nil {
+		w.WriteHeader(http.StatusNotFound)
 		return
 	}
 
 	// Write status
-	w.WriteHeader(200)
+	w.WriteHeader(http.StatusOK)
 }

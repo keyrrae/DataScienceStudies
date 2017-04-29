@@ -3,10 +3,10 @@ package main
 import (
 	"net/http"
 
-	_ "github.com/goji/httpauth"
-	"github.com/gorilla/mux"
 	"fmt"
 	"github.com/goji/httpauth"
+	_ "github.com/goji/httpauth"
+	"github.com/gorilla/mux"
 )
 
 var cred map[string]string
@@ -21,14 +21,14 @@ func main() {
 	myUnauthorizedHandler := genHandler()
 
 	authOpts := httpauth.AuthOptions{
-		Realm: "DevCo",
-		AuthFunc: myAuthFunc,
+		Realm:               "DevCo",
+		AuthFunc:            myAuthFunc,
 		UnauthorizedHandler: myUnauthorizedHandler,
 	}
 
 	r := mux.NewRouter()
 
-	r.HandleFunc("/", RootHandler)//.Method("GET")
+	r.HandleFunc("/", RootHandler) //.Method("GET")
 
 	r.HandleFunc("/signup", SignupHandler).Methods("POST")
 	//http.Handle("/signup", httpauth.BasicAuth(authOpts)(r))
