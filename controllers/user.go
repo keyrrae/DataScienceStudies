@@ -78,7 +78,7 @@ func (uc UserController) GetUser(w http.ResponseWriter, r *http.Request) {
 	userid := params["userid"]
 
 	if !bson.IsObjectIdHex(userid) {
-		w.WriteHeader(404)
+		w.WriteHeader(http.StatusNotFound)
 		return
 	}
 
@@ -90,7 +90,7 @@ func (uc UserController) GetUser(w http.ResponseWriter, r *http.Request) {
 
 	// Fetch user
 	if err := uc.session.DB(uc.dbname).C(uc.tablename).FindId(oid).One(&u); err != nil {
-		w.WriteHeader(404)
+		w.WriteHeader(http.StatusNotFound)
 		return
 	}
 
@@ -100,7 +100,7 @@ func (uc UserController) GetUser(w http.ResponseWriter, r *http.Request) {
 	// Write content-type, statuscode, payload
 	w.Header().Set("Content-Type", "application/json")
 
-	w.WriteHeader(200)
+	w.WriteHeader(http.StatusOK)
 	fmt.Fprintf(w, "%s", uj)
 }
 
@@ -129,7 +129,7 @@ func (uc UserController) CreateUser(w http.ResponseWriter, r *http.Request) {
 
 		// Write content-type, statuscode, payload
 		w.Header().Set("Content-Type", "application/json")
-		w.WriteHeader(201)
+		w.WriteHeader(http.StatusCreated)
 		fmt.Fprintf(w, "%s", uj)
 		return
 	}

@@ -23,25 +23,47 @@ func main() {
 	r := mux.NewRouter()
 
 	// Get a UserController instance
-	uc := controllers.NewUserController(getSession(), dbname)
+	session := getSession()
+	uc := controllers.NewUserController(session, dbname)
+	tc := controllers.NewTownController(session, dbname)
 	auth := basicauth.NewBasicAuthenticator(uc, cred)
 
-	// Get a user resource
+	r.HandleFunc("/", basicauth.WrapAuthenticator(RootHandler, auth.UserAuth)).Methods("GET")
+
+
+	// ================================= User APIs ===========================================
+	// Authenticate user login
 	authHandler := basicauth.WrapAuthenticator(RootHandler, auth.AdminAuth)
 	r.HandleFunc("/auth", authHandler).Methods("POST")
-
-	getUserHandler := basicauth.WrapAuthenticator(uc.CreateUser, auth.UserAuth)
-	r.HandleFunc("/user/{userid}", getUserHandler).Methods("GET")
-
-	r.HandleFunc("/", basicauth.WrapAuthenticator(RootHandler, auth.UserAuth)).Methods("GET")
 
 	// Create a new user
 	newUserHandler := basicauth.WrapAuthenticator(uc.CreateUser, auth.AdminAuth)
 	r.HandleFunc("/user", newUserHandler).Methods("POST")
 
+	// Get a user
+	getUserHandler := basicauth.WrapAuthenticator(uc.CreateUser, auth.UserAuth)
+	r.HandleFunc("/user/{userid}", getUserHandler).Methods("GET")
+
 	// Remove an existing user
 	removeUserHandler := basicauth.WrapAuthenticator(uc.CreateUser, auth.AdminAuth)
 	r.HandleFunc("/user/{userid}", removeUserHandler).Methods("DELETE")
+
+	// ================================= Town APIs ===========================================
+	// Create a new town
+	newTownHandler := basicauth.WrapAuthenticator(tc.CreateTown, auth.UserAuth)
+	r.HandleFunc("/town", newTownHandler).Methods("POST")
+
+	// Remove an existing town
+	removeTownHandler := basicauth.WrapAuthenticator(tc.DeleteTown, auth.UserAuth)
+	r.HandleFunc("/town/{townid}", removeTownHandler).Methods("DELETE")
+
+	// Remove an existing town
+	modifyTownHandler := basicauth.WrapAuthenticator(tc.EditTown, auth.UserAuth)
+	r.HandleFunc("/town/{townid}", modifyTownHandler).Methods("POST")
+
+	// Get a town
+	getTownHandler := basicauth.WrapAuthenticator(tc.GetTown, auth.UserAuth)
+	r.HandleFunc("/town/{townid}", getTownHandler).Methods("GET")
 
 	port := os.Getenv("PORT")
 	if port == "" {
@@ -49,7 +71,7 @@ func main() {
 	}
 
 	// Fire up the server
-	http.ListenAndServe(":"+port, r)
+	http.ListenAndServe(":" + port, r)
 }
 
 // getSession creates a new mongo session and panics if connection error occurs
