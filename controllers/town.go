@@ -4,28 +4,14 @@ import (
 	"encoding/json"
 	"github.com/gorilla/mux"
 	"github.com/keyrrae/monimenta_backend/models"
-	"gopkg.in/mgo.v2"
 	"gopkg.in/mgo.v2/bson"
 	"net/http"
 	"fmt"
+	"io/ioutil"
 )
-
-type (
-	// PostController represents the controller for operating on the Post resource
-	TownController struct {
-		dbname    string
-		session   *mgo.Session
-		tablename string
-	}
-)
-
-// NewUserController provides a reference to a UserController with provided mongo session
-func NewTownController(s *mgo.Session, databasename string) *TownController {
-	return &TownController{dbname: databasename, session: s, tablename: "towns"}
-}
 
 // GetTown retrieves an individual user resource
-func (c TownController) GetTown(w http.ResponseWriter, r *http.Request) {
+func (c DbController) GetTown(w http.ResponseWriter, r *http.Request) {
 	// Grab id
 	params := mux.Vars(r)
 	townId := params["townid"]
@@ -41,7 +27,7 @@ func (c TownController) GetTown(w http.ResponseWriter, r *http.Request) {
 	t := models.Town{}
 
 	// Fetch user
-	if err := c.session.DB(c.dbname).C(c.tablename).FindId(databaseId).One(&t); err != nil {
+	if err := c.Session.DB(c.DbName).C(c.TownTable).FindId(databaseId).One(&t); err != nil {
 		w.WriteHeader(http.StatusNotFound)
 		return
 	}
@@ -57,7 +43,8 @@ func (c TownController) GetTown(w http.ResponseWriter, r *http.Request) {
 }
 
 // CreateTown creates a new town entry
-func (c TownController) CreateTown(w http.ResponseWriter, r *http.Request) {
+func (c DbController) CreateTown(w http.ResponseWriter, r *http.Request) {
+
 	// Stub an user to be populated from the body
 	t := models.Town{}
 
@@ -67,8 +54,14 @@ func (c TownController) CreateTown(w http.ResponseWriter, r *http.Request) {
 	// Add an Id
 	t.Id = bson.NewObjectId()
 
+	// TODO: add a reference to this town in user
+	// TODO: Locality sensitive hashing
+	// TODO: get address using google api
+
+	// REF: http://maps.googleapis.com/maps/api/geocode/json?latlng=44.4647452,7.3553838&sensor=false
+
 	// insert in to database
-	err := c.session.DB(c.dbname).C(c.tablename).Insert(t)
+	err := c.Session.DB(c.DbName).C(c.TownTable).Insert(t)
 	if err != nil {
 		w.WriteHeader(http.StatusNotAcceptable)
 		return
@@ -79,7 +72,7 @@ func (c TownController) CreateTown(w http.ResponseWriter, r *http.Request) {
 }
 
 // RemoveTown removes an existing town entry
-func (c TownController) DeleteTown(w http.ResponseWriter, r *http.Request) {
+func (c DbController) DeleteTown(w http.ResponseWriter, r *http.Request) {
 	// Grab id
 	params := mux.Vars(r)
 	townId := params["townid"]
@@ -92,7 +85,7 @@ func (c TownController) DeleteTown(w http.ResponseWriter, r *http.Request) {
 	oid := bson.ObjectIdHex(townId)
 
 	// Remove user
-	if err := c.session.DB(c.dbname).C(c.tablename).RemoveId(oid); err != nil {
+	if err := c.Session.DB(c.DbName).C(c.TownTable).RemoveId(oid); err != nil {
 		w.WriteHeader(http.StatusNotFound)
 		return
 	}
@@ -102,7 +95,7 @@ func (c TownController) DeleteTown(w http.ResponseWriter, r *http.Request) {
 }
 
 // RemoveTown removes an existing town entry
-func (c TownController) EditTown(w http.ResponseWriter, r *http.Request) {
+func (c DbController) EditTown(w http.ResponseWriter, r *http.Request) {
 	// Grab id
 	params := mux.Vars(r)
 	townId := params["townid"]
@@ -120,7 +113,82 @@ func (c TownController) EditTown(w http.ResponseWriter, r *http.Request) {
 	t.Id = bson.ObjectIdHex(townId)
 
 	// Remove user
-	if err := c.session.DB(c.dbname).C(c.tablename).UpdateId(t.Id, t); err != nil {
+	if err := c.Session.DB(c.DbName).C(c.TownTable).UpdateId(t.Id, t); err != nil {
+		w.WriteHeader(http.StatusNotFound)
+		return
+	}
+
+	// Write status
+	w.WriteHeader(http.StatusOK)
+}
+
+
+// UserVisitTown update visit town
+func (c DbController) UserVisitTown(w http.ResponseWriter, r *http.Request) {
+	// Grab id
+	params := mux.Vars(r)
+	townId := params["townid"]
+	userId := params["userid"]
+
+	if !bson.IsObjectIdHex(townId) || !bson.IsObjectIdHex(userId){
+		w.WriteHeader(http.StatusNotFound)
+		return
+	}
+
+	townDbID := bson.ObjectIdHex(townId)
+
+	// Stub town
+	t := models.Town{}
+
+	// Fetch town
+	if err := c.Session.DB(c.DbName).C(c.TownTable).FindId(townDbID).One(&t); err != nil {
+		w.WriteHeader(http.StatusNotFound)
+		return
+	}
+
+	t.VisitedBy = append(t.VisitedBy, userId)
+
+	// Remove user
+	if err := c.Session.DB(c.DbName).C(c.TownTable).UpdateId(t.Id, t); err != nil {
+		w.WriteHeader(http.StatusNotFound)
+		return
+	}
+
+	// Write status
+	w.WriteHeader(http.StatusOK)
+}
+
+// UpdateSketch update the url to sketch
+func (c DbController) UpdateSketch(w http.ResponseWriter, r *http.Request) {
+	// Grab id
+	params := mux.Vars(r)
+	townId := params["townid"]
+
+	if !bson.IsObjectIdHex(townId) {
+		w.WriteHeader(http.StatusNotFound)
+		return
+	}
+
+	townDbID := bson.ObjectIdHex(townId)
+
+	// Stub town
+	t := models.Town{}
+
+	// Fetch town
+	if err := c.Session.DB(c.DbName).C(c.TownTable).FindId(townDbID).One(&t); err != nil {
+		w.WriteHeader(http.StatusNotFound)
+		return
+	}
+
+	url, err := ioutil.ReadAll(r.Body);
+	if err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		return
+	}
+
+	t.Sketch = string(url)
+
+	if err := c.Session.DB(c.DbName).C(c.TownTable).UpdateId(t.Id, t); err != nil {
 		w.WriteHeader(http.StatusNotFound)
 		return
 	}

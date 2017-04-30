@@ -8,13 +8,13 @@ import (
 )
 
 type BasicAuthenticator struct {
-	UserController *controllers.UserController
-	Credentials    map[string]string
+	DbController *controllers.DbController
+	Credentials  map[string]string
 }
 
-func NewBasicAuthenticator(uc *controllers.UserController, cred map[string]string) *BasicAuthenticator {
+func NewBasicAuthenticator(c *controllers.DbController, cred map[string]string) *BasicAuthenticator {
 	return &BasicAuthenticator{
-		UserController: uc,
+		DbController: c,
 		Credentials:    cred,
 	}
 }
@@ -24,7 +24,7 @@ func (au *BasicAuthenticator) FuncAuth(uid, pass string) bool {
 		return pass == val
 	}
 
-	user, err := au.UserController.GetUserFromDB(uid)
+	user, err := au.DbController.GetUserFromDB(uid)
 	if err != nil {
 		return false
 	}
