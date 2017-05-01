@@ -15,7 +15,7 @@ type BasicAuthenticator struct {
 func NewBasicAuthenticator(c *controllers.DbController, cred map[string]string) *BasicAuthenticator {
 	return &BasicAuthenticator{
 		DbController: c,
-		Credentials:    cred,
+		Credentials:  cred,
 	}
 }
 

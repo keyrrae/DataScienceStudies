@@ -1,16 +1,37 @@
 package controllers
 
 import (
+	"crypto/sha1"
 	"encoding/json"
 	"fmt"
 	"github.com/gorilla/mux"
 	"github.com/keyrrae/monimenta_backend/models"
 	"gopkg.in/mgo.v2/bson"
+	"io"
 	"io/ioutil"
 	"log"
 	"net/http"
 	"strconv"
 )
+
+func genGeoId(lat, lng float64) string {
+	lat *= 10
+	lng *= 10
+
+	lat = float64(int(lat)) / 10
+	lng = float64(int(lng)) / 10
+
+	coord := models.Coord{Lat: lat, Lng: lng}
+
+	j, _ := json.Marshal(coord)
+
+	h := sha1.New()
+	io.WriteString(h, string(j))
+	sum := h.Sum(nil)
+
+	s := fmt.Sprintf("%x", sum[0:12])
+	return s
+}
 
 // GetTown retrieves an individual user resource
 func (c DbController) GetTown(w http.ResponseWriter, r *http.Request) {

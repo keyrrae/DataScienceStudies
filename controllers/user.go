@@ -10,9 +10,8 @@ import (
 	"net/http"
 )
 
-
 func (c DbController) GetUserFromDB(id string) (user models.User, err error) {
-		u := models.User{}
+	u := models.User{}
 
 	if !bson.IsObjectIdHex(id) {
 		return u, errors.New("Invalid user id")

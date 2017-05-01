@@ -75,7 +75,7 @@ func main() {
 	}
 
 	// Fire up the server
-	http.ListenAndServe(":" + port, r)
+	http.ListenAndServe(":"+port, r)
 }
 
 // getSession creates a new mongo session and panics if connection error occurs
