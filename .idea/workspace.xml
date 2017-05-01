@@ -1,12 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ChangeListManager">
-    <list default="true" id="2e60d620-ba9a-4e96-8efa-d0ec01a5bfb9" name="Default" comment="">
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/models/address.go" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/monimenta_backend" afterPath="$PROJECT_DIR$/monimenta_backend" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/controllers/town.go" afterPath="$PROJECT_DIR$/controllers/town.go" />
-    </list>
+    <list default="true" id="2e60d620-ba9a-4e96-8efa-d0ec01a5bfb9" name="Default" comment="" />
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="TRACKING_ENABLED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
@@ -17,7 +12,7 @@
   <component name="ExecutionTargetManager" SELECTED_TARGET="default_target" />
   <component name="FileEditorManager">
     <leaf SIDE_TABS_SIZE_LIMIT_KEY="300">
-      <file leaf-file-name="user.go" pinned="false" current-in-tab="false">
+      <file leaf-file-name="user.go" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/controllers/user.go">
           <provider selected="true" editor-type-id="text-editor">
             <state relative-caret-position="1260">
@@ -29,11 +24,11 @@
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="town.go" pinned="false" current-in-tab="true">
+      <file leaf-file-name="town.go" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/models/town.go">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="225">
-              <caret line="15" column="57" lean-forward="true" selection-start-line="15" selection-start-column="57" selection-end-line="15" selection-end-column="57" />
+            <state relative-caret-position="45">
+              <caret line="3" column="0" lean-forward="true" selection-start-line="3" selection-start-column="0" selection-end-line="3" selection-end-column="0" />
               <folding>
                 <element signature="e#16#45#0" expanded="true" />
               </folding>
@@ -910,12 +905,12 @@
       <workItem from="1493413234975" duration="3000" />
       <workItem from="1493414729369" duration="336000" />
       <workItem from="1493415297270" duration="19982000" />
-      <workItem from="1493607914952" duration="2404000" />
+      <workItem from="1493607914952" duration="2529000" />
     </task>
     <servers />
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="29349000" />
+    <option name="totallyTimeSpent" value="29474000" />
   </component>
   <component name="ToolWindowManager">
     <frame x="715" y="53" width="1403" height="937" extended-state="0" />
@@ -1255,22 +1250,22 @@
         </state>
       </provider>
     </entry>
+    <entry file="file://$PROJECT_DIR$/models/town.go">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="45">
+          <caret line="3" column="0" lean-forward="true" selection-start-line="3" selection-start-column="0" selection-end-line="3" selection-end-column="0" />
+          <folding>
+            <element signature="e#16#45#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
     <entry file="file://$PROJECT_DIR$/controllers/user.go">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="1260">
           <caret line="84" column="16" lean-forward="true" selection-start-line="84" selection-start-column="16" selection-end-line="84" selection-end-column="16" />
           <folding>
             <element signature="e#21#174#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/models/town.go">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="225">
-          <caret line="15" column="57" lean-forward="true" selection-start-line="15" selection-start-column="57" selection-end-line="15" selection-end-column="57" />
-          <folding>
-            <element signature="e#16#45#0" expanded="true" />
           </folding>
         </state>
       </provider>
