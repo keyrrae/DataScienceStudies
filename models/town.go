@@ -14,16 +14,10 @@ type Town struct {
 	ImageUrls   []string      `json:"image_urls" bson:"image_urls"`
 	VisitedBy   []string      `json:"visited_by" bson:"visited_by"`
 	Sketch      string        `json:"sketch" bson:"sketch"`
+	GeoId       string        `json:"geoid" bson:"geoid"`
 }
 
-type TownGeoRequest struct {
-	Lat    float64 `json:"lat" bson:"lat"`
-	Lng    float64 `json:"lng" bson:"lng"`
-	Radius float64 `json:"radius" bson:"radius"`
-	Count  int     `json:"display_count" bson:"display_count"`
-}
-
-type Coord struct {
-	Lat float64 `json:"lat"`
-	Lng float64 `json:"lng"`
+type CoOrd struct {
+	Lat int `json:"lat"`
+	Lng int `json:"lng"`
 }

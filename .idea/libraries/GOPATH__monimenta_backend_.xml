@@ -10,8 +10,6 @@
       <root url="file://$PROJECT_DIR$/../.." />
       <root url="file://$PROJECT_DIR$/../../../google.golang.org" />
     </CLASSES>
-    <JAVADOC />
-    <LIBRARY_FILE />
     <SOURCES>
       <root url="file://$PROJECT_DIR$/../../../golang.org" />
       <root url="file://$PROJECT_DIR$/../../../gopkg.in" />

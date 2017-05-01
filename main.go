@@ -69,6 +69,10 @@ func main() {
 	updateSketchHandler := basicauth.WrapAuthenticator(dbc.UpdateSketch, auth.UserAuth)
 	r.HandleFunc("/town/{townid}/sketch", updateSketchHandler).Methods("POST")
 
+	geoSearchHandler := basicauth.WrapAuthenticator(dbc.GeoSearch, auth.UserAuth)
+	r.HandleFunc("/geosearch", geoSearchHandler).Methods("GET")
+
+
 	port := os.Getenv("PORT")
 	if port == "" {
 		log.Fatal("$PORT must be set")

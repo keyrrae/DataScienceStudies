@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"gopkg.in/mgo.v2/bson"
 	"io"
+	"math"
 )
 
 type Coord struct {
@@ -21,7 +22,7 @@ func genGeoId(lat, lng float64) string {
 	lng = float64(int(lng)) / 10
 
 	coord := Coord{Lat: lat, Lng: lng}
-
+	fmt.Println(coord)
 	j, _ := json.Marshal(coord)
 
 	h := sha1.New()
@@ -34,6 +35,11 @@ func genGeoId(lat, lng float64) string {
 
 func main() {
 	s := genGeoId(34.18, -119.234)
+
+	radius := math.Ceil(0.0425 * 100) / 100
+
 	fmt.Println(s)
+	fmt.Println(radius)
+
 	fmt.Println(bson.IsObjectIdHex(s))
 }
