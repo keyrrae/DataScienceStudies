@@ -2,12 +2,14 @@ package controllers
 
 import (
 	"encoding/json"
+	"fmt"
 	"github.com/gorilla/mux"
 	"github.com/keyrrae/monimenta_backend/models"
 	"gopkg.in/mgo.v2/bson"
-	"net/http"
-	"fmt"
 	"io/ioutil"
+	"log"
+	"net/http"
+	"strconv"
 )
 
 // GetTown retrieves an individual user resource
@@ -56,7 +58,29 @@ func (c DbController) CreateTown(w http.ResponseWriter, r *http.Request) {
 
 	// TODO: add a reference to this town in user
 	// TODO: Locality sensitive hashing
-	// TODO: get address using google api
+
+	if t.Address == "" {
+
+		getaddurl := "http://maps.googleapis.com/maps/api/geocode/json?latlng="
+		getaddurl += strconv.FormatFloat(t.Lat, 'f', -1, 64) + "," + strconv.FormatFloat(t.Lng, 'f', -1, 64)
+		getaddurl += "&sensor=false"
+
+		req, _ := http.NewRequest("GET", getaddurl, nil)
+		client := &http.Client{}
+		resp, err := client.Do(req)
+		if err != nil {
+			log.Fatal(err)
+		}
+		defer resp.Body.Close()
+
+		body, _ := ioutil.ReadAll(resp.Body)
+		add := models.Address{}
+		json.Unmarshal(body, &add)
+
+		if len(add.Results) > 0 {
+			t.Address = add.Results[0].FormattedAddress
+		}
+	}
 
 	// REF: http://maps.googleapis.com/maps/api/geocode/json?latlng=44.4647452,7.3553838&sensor=false
 
@@ -122,7 +146,6 @@ func (c DbController) EditTown(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusOK)
 }
 
-
 // UserVisitTown update visit town
 func (c DbController) UserVisitTown(w http.ResponseWriter, r *http.Request) {
 	// Grab id
@@ -130,7 +153,7 @@ func (c DbController) UserVisitTown(w http.ResponseWriter, r *http.Request) {
 	townId := params["townid"]
 	userId := params["userid"]
 
-	if !bson.IsObjectIdHex(townId) || !bson.IsObjectIdHex(userId){
+	if !bson.IsObjectIdHex(townId) || !bson.IsObjectIdHex(userId) {
 		w.WriteHeader(http.StatusNotFound)
 		return
 	}
@@ -180,7 +203,7 @@ func (c DbController) UpdateSketch(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	url, err := ioutil.ReadAll(r.Body);
+	url, err := ioutil.ReadAll(r.Body)
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
 		return
