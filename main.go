@@ -1,20 +1,40 @@
 package main
 
 import (
+	"encoding/json"
 	"fmt"
+	"github.com/go-redis/redis"
 	"github.com/gorilla/mux"
 	"github.com/keyrrae/monimenta_backend/basicauth"
 	"github.com/keyrrae/monimenta_backend/controllers"
 	"gopkg.in/mgo.v2"
+	"io/ioutil"
 	"log"
 	"net/http"
 	"os"
 )
 
+type Config struct {
+	DbName        string `json:"dbname"`
+	MdbUser       string `json:"mdbuser"`
+	MdbHash       string `json:"mdbhash"`
+	MdbInstance   string `json:"mdbinstance"`
+	RedisInstance string `json:"redis_instance"`
+	RedisHost     string `json:"redis_host"`
+	RedisHash     string `json:"redis_hash"`
+}
+
 var cred map[string]string
-var dbname = "heroku_tqfnq24p"
+var config Config
 
 func init() {
+	config = Config{}
+
+	configJ, err := ioutil.ReadFile("./config.json")
+	check(err)
+
+	json.Unmarshal(configJ, &config)
+
 	cred = make(map[string]string)
 	cred["admin"] = "admin"
 }
@@ -23,8 +43,10 @@ func main() {
 	r := mux.NewRouter()
 
 	// Get a UserController instance
-	session := getSession()
-	dbc := controllers.NewDbController(session, dbname)
+	mgoSession := NewMongoSession()
+	redisClient := NewRedisClient()
+	dbc := controllers.NewDbController(mgoSession, redisClient, config.DbName)
+
 	auth := basicauth.NewBasicAuthenticator(dbc, cred)
 
 	r.HandleFunc("/", basicauth.WrapAuthenticator(RootHandler, auth.UserAuth)).Methods("GET")
@@ -72,7 +94,6 @@ func main() {
 	geoSearchHandler := basicauth.WrapAuthenticator(dbc.GeoSearch, auth.UserAuth)
 	r.HandleFunc("/geosearch", geoSearchHandler).Methods("GET")
 
-
 	port := os.Getenv("PORT")
 	if port == "" {
 		log.Fatal("$PORT must be set")
@@ -83,9 +104,10 @@ func main() {
 }
 
 // getSession creates a new mongo session and panics if connection error occurs
-func getSession() *mgo.Session {
+func NewMongoSession() *mgo.Session {
 	// Connect to our local mongo
-	s, err := mgo.Dial("mongodb://admin:c0ffee@ds119091.mlab.com:19091/" + dbname)
+	mgoUrl := "mongodb://" + config.MdbUser + ":" + config.MdbHash + "@" + config.MdbInstance
+	s, err := mgo.Dial( mgoUrl + config.DbName)
 
 	// Check if connection error, is mongo running?
 	if err != nil {
@@ -96,6 +118,21 @@ func getSession() *mgo.Session {
 	return s
 }
 
+func NewRedisClient() *redis.Client {
+	client := redis.NewClient(&redis.Options{
+		Addr:     config.RedisInstance + config.RedisHost,
+		Password: config.RedisHash,
+		DB:       0,
+	})
+	return client
+}
+
 func RootHandler(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprintf(w, "Hello World, %s!", r.URL.Path[1:])
+}
+
+func check(e error) {
+	if e != nil {
+		panic(e)
+	}
 }

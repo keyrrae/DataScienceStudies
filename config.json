@@ -1,0 +1,9 @@
+{
+  "dbname": "heroku_tqfnq24p",
+  "mdbuser": "admin",
+  "mdbhash": "c0ffee",
+  "mdbinstance": "ds119091.mlab.com:19091/",
+  "redis_instance": "ec2-34-204-242-91",
+  "redis_host": ".compute-1.amazonaws.com:29479",
+  "redis_hash": "p258fce57afddd567a931a390a0694bad25fb6ca5f08d775a766d2c0d8f42a8ec"
+}
