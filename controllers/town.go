@@ -69,7 +69,7 @@ func (c DbController) GetTown(w http.ResponseWriter, r *http.Request) {
 	// Marshal provided interface into JSON structure
 	tjson, _ := json.Marshal(t)
 
-	// Write content-type, statuscode, payload
+	// Write content-type, status code, payload
 	w.Header().Set("Content-Type", "application/json")
 
 	w.WriteHeader(http.StatusOK)
