@@ -7,7 +7,20 @@ import (
 	"math"
 	"gopkg.in/mgo.v2/bson"
 	"fmt"
+	"sort"
 )
+
+type TownByVisited []models.Town
+
+func (s TownByVisited) Len() int {
+	return len(s)
+}
+func (s TownByVisited) Swap(i, j int) {
+	s[i], s[j] = s[j], s[i]
+}
+func (s TownByVisited) Less(i, j int) bool {
+	return len(s[i].VisitedBy) > len(s[i].VisitedBy)
+}
 
 func (c DbController) GeoSearch(w http.ResponseWriter, r *http.Request) {
 	gs := models.GeoSearchRequest{}
@@ -59,14 +72,27 @@ func (c DbController) GeoSearch(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	//var res []models.Town
+	var res []models.Town
 
 	for i := 0; i < numStep * numStep; i++ {
 		town := <- townChan
 		if town != nil {
-			//res = append(res, *town)
-			fmt.Println(town)
+			res = append(res, town...)
+			//fmt.Println(town)
 		}
 	}
-  // TODO: priority queue
+
+	sort.Sort(TownByVisited(res))
+	if len(res) > gs.Count {
+			res = res[0:gs.Count]
+	}
+
+	// Marshal provided interface into JSON structure
+	townsJson, _ := json.Marshal(res)
+
+	// Write content-type, statuscode, payload
+	w.Header().Set("Content-Type", "application/json")
+
+	w.WriteHeader(http.StatusOK)
+	fmt.Fprintf(w, "%s", townsJson)
 }
