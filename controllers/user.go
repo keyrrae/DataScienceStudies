@@ -8,7 +8,20 @@ import (
 	"github.com/keyrrae/monimenta_backend/models"
 	"gopkg.in/mgo.v2/bson"
 	"net/http"
+	"crypto/sha1"
+	"io"
+	"time"
 )
+
+func genToken(u models.User) string {
+
+	now := time.Now()
+	tokenString := u.Id.String() + now.Format("20060102150405")
+	h := sha1.New()
+	io.WriteString(h, tokenString)
+	s := fmt.Sprintf("%x", h.Sum(nil))
+	return s
+}
 
 func (c DbController) GetUserFromDB(id string) (user models.User, err error) {
 	u := models.User{}
@@ -35,6 +48,7 @@ func (c DbController) AuthUser(w http.ResponseWriter, r *http.Request) {
 	json.NewDecoder(r.Body).Decode(&u)
 
 	uindb := models.User{}
+	fmt.Println(u)
 	err := c.Session.DB(c.DbName).C(c.UserTable).Find(bson.M{"email": u.Email}).One(&uindb)
 	if err != nil {
 		w.WriteHeader(http.StatusNotFound)
@@ -46,8 +60,23 @@ func (c DbController) AuthUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	token := genToken(uindb)
+	uindb.Token = token
+	ut := models.UserToken{
+					Id: uindb.Id,
+					Token:token,
+				}
+
+	u.Token = token
+
+	if err := c.Session.DB(c.DbName).C(c.UserTable).UpdateId(uindb.Id, uindb); err != nil {
+		fmt.Println("here")
+		w.WriteHeader(http.StatusNotFound)
+		return
+	}
+
 	// Marshal provided interface into JSON structure
-	uj, _ := json.Marshal(u)
+	uj, _ := json.Marshal(ut)
 
 	// Write content-type, statuscode, payload
 	w.Header().Set("Content-Type", "application/json")
@@ -106,12 +135,15 @@ func (c DbController) CreateUser(w http.ResponseWriter, r *http.Request) {
 		//log.Fatal(err)
 		// Add an Id
 		u.Id = bson.NewObjectId()
+		u.Token = genToken(u)
 
 		// Write the user to mongo
 		c.Session.DB(c.DbName).C(c.UserTable).Insert(u)
-
+		ut := models.UserToken{}
+		ut.Id = u.Id
+		ut.Token = u.Token
 		// Marshal provided interface into JSON structure
-		uj, _ := json.Marshal(u)
+		uj, _ := json.Marshal(ut)
 
 		// Write content-type, statuscode, payload
 		w.Header().Set("Content-Type", "application/json")

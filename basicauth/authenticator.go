@@ -29,7 +29,7 @@ func (au *BasicAuthenticator) FuncAuth(uid, pass string) bool {
 		return false
 	}
 
-	if user.Cred == pass {
+	if user.Token == pass {
 		au.Credentials[uid] = pass
 		return true
 	}
@@ -105,7 +105,7 @@ func (au *BasicAuthenticator) AdminAuth(h http.HandlerFunc) http.HandlerFunc {
 			return
 		}
 
-		if !au.FuncAuth(pair[0], pair[1]) {
+		if !au.FuncAdminAuth(pair[0], pair[1]) {
 			http.Error(w, "Not authorized", http.StatusUnauthorized)
 			return
 		}

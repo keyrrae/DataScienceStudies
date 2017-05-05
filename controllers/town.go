@@ -131,7 +131,7 @@ func (c DbController) CreateTown(w http.ResponseWriter, r *http.Request) {
 			return // exit this goroutine
 		}
 		fmt.Println(u)
-		u.TownIDs = append(u.TownIDs, string(t.Id))
+		u.TownIDs = append(u.TownIDs, t.Id.String())
 
 		// change user
 		if err := collection.UpdateId(u.Id, u); err != nil {

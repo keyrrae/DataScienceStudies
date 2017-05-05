@@ -53,7 +53,7 @@ func main() {
 
 	// ================================= User APIs ===========================================
 	// Authenticate user login
-	authHandler := basicauth.WrapAuthenticator(RootHandler, auth.AdminAuth)
+	authHandler := basicauth.WrapAuthenticator(dbc.AuthUser, auth.AdminAuth)
 	r.HandleFunc("/auth", authHandler).Methods("POST")
 
 	// Create a new user
@@ -77,9 +77,9 @@ func main() {
 	removeTownHandler := basicauth.WrapAuthenticator(dbc.DeleteTown, auth.UserAuth)
 	r.HandleFunc("/town/{townid}", removeTownHandler).Methods("DELETE")
 
-	// Remove an existing town
+	// Modify an existing town
 	modifyTownHandler := basicauth.WrapAuthenticator(dbc.EditTown, auth.UserAuth)
-	r.HandleFunc("/town/{townid}", modifyTownHandler).Methods("POST")
+	r.HandleFunc("/town/{townid}", modifyTownHandler).Methods("PUT")
 
 	// Get a town
 	getTownHandler := basicauth.WrapAuthenticator(dbc.GetTown, auth.UserAuth)
@@ -89,7 +89,7 @@ func main() {
 	r.HandleFunc("/town/{townid}/user/{userid}/visit", userVisitHandler).Methods("POST")
 
 	updateSketchHandler := basicauth.WrapAuthenticator(dbc.UpdateSketch, auth.UserAuth)
-	r.HandleFunc("/town/{townid}/sketch", updateSketchHandler).Methods("POST")
+	r.HandleFunc("/town/{townid}/sketch", updateSketchHandler).Methods("PUT")
 
 	geoSearchHandler := basicauth.WrapAuthenticator(dbc.GeoSearch, auth.UserAuth)
 	r.HandleFunc("/geosearch", geoSearchHandler).Methods("GET")

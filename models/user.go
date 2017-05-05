@@ -8,6 +8,7 @@ type User struct {
 	Cred    string        `json:"cred" bson:"cred"`
 	Name    string        `json:"name" bson:"name"`
 	Email   string        `json:"email" bson:"email"`
+	Token   string        `json:"token" bson:"token"`
 	TownIDs []string      `bson:"towns"`
 }
 
@@ -21,4 +22,9 @@ type UserInfo struct {
 	Id    bson.ObjectId `json:"id" bson:"_id"`
 	Name  string        `json:"name" bson:"name"`
 	Email string        `json:"email" bson:"email"`
+}
+
+type UserToken struct {
+	Id    bson.ObjectId `json:"id" bson:"_id"`
+	Token  string        `json:"token" bson:"token"`
 }
