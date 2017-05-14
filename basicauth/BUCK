@@ -1,0 +1,9 @@
+go_library(
+    name='basicauth',
+    srcs=glob(['*.go']),
+    visibility = [ 'PUBLIC' ],
+)
+
+project_config(
+    src_target = ':basicauth',
+)

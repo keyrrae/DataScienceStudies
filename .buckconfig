@@ -1,0 +1,4 @@
+[alias]
+    app = //:monimenta_backend
+[httpserver]
+    port = 0

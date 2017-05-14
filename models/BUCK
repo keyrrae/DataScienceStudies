@@ -1,0 +1,12 @@
+go_library(
+    name='models',
+    srcs=glob([
+        '*.go',
+    ]),
+    visibility = [ 'PUBLIC' ],
+
+)
+
+project_config(
+    src_target = ':models',
+)

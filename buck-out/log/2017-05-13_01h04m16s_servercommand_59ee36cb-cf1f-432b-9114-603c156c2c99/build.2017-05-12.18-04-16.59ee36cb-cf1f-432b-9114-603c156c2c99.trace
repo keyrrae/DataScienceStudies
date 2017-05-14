@@ -1,0 +1,1 @@
+[{"cat":"buck","name":"process_name","ph":"M","pid":0,"tid":0,"ts":0,"tts":0,"args":{"name":"buck"}},{"cat":"buck","name":"server","ph":"B","pid":0,"tid":602,"ts":31377541594,"tts":19693,"args":{"command_args":"status --http-port"}},{"cat":"buck","name":"server","ph":"E","pid":0,"tid":602,"ts":31377552953,"tts":21730,"args":{"command_args":"status --http-port","daemon":"true"}}]

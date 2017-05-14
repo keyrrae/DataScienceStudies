@@ -1,0 +1,11 @@
+go_library(
+    name='controllers',
+    srcs=glob([
+        '*.go',
+    ]),
+    visibility = [ 'PUBLIC' ],
+)
+
+project_config(
+    src_target = ':controllers',
+)
